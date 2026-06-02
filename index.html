@@ -281,7 +281,7 @@
     let listaMunicipiosAdicionados = [];
 
     document.addEventListener("DOMContentLoaded", async () => {
-        const URL_CONTADOR = "https://script.google.com/macros/s/AKfycbxKpXQB3KaVw5MQSllK72CqjUe86k3YIP4BoFoImLffUjS4v59ZFeaKyHBR-PtOMJ6flw/exec";
+        const URL_CONTADOR = "https://script.google.com/macros/s/AKfycbxjX1pfkUyaTsz13Ar48173H3coaP9hbaqN6E7o5-EQGzhTs8KnhTAmkv0Jnzcr1HEeLw/exec";
         fetch(URL_CONTADOR, { method: 'GET', mode: 'no-cors' }).catch(e => console.log(e));
        
         try {
@@ -557,7 +557,7 @@
             dados['valorMeta'+i] = v ? v.value : "";
         }
 
-        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxKpXQB3KaVw5MQSllK72CqjUe86k3YIP4BoFoImLffUjS4v59ZFeaKyHBR-PtOMJ6flw/exec";
+        const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxjX1pfkUyaTsz13Ar48173H3coaP9hbaqN6E7o5-EQGzhTs8KnhTAmkv0Jnzcr1HEeLw/exec";
         try {
             await fetch(URL_SCRIPT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
             alert("Dados salvos com sucesso na planilha!"); form.reset(); listaMunicipiosAdicionados = []; atualizarInterfaceMunicipios();
