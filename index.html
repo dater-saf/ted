@@ -38,8 +38,44 @@
         .row { display: flex; gap: 25px; flex-wrap: wrap; }
         .col { flex: 1; min-width: 250px; }
         .section-separator { border: 0; border-top: 1px solid #eee; margin: 30px 0; }
+        
         button { background-color: var(--cor-primaria); color: white; padding: 15px 25px; border: none; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; font-weight: 700; margin-top: 25px; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
         button:hover { background-color: var(--cor-primaria-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15); }
+        
+        /* Botão Flutuante Rascunho */
+        .btn-flutuante {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #34495e;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px; /* Formato pílula */
+            box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+            z-index: 9999;
+            width: auto;
+            border: 2px solid #2c3e50;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 0;
+            text-transform: none; /* Deixa o texto mais natural */
+        }
+        .btn-flutuante:hover {
+            background-color: #2c3e50;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+        @media (max-width: 768px) {
+            .btn-flutuante {
+                bottom: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                font-size: 13px;
+            }
+        }
+
         .btn-incluir { background-color: var(--cor-card) !important; color: var(--cor-destaque) !important; border: 2px solid var(--cor-destaque) !important; padding: 10px 20px !important; margin-top: 0 !important; width: auto !important; height: fit-content; font-size: 14px; text-transform: none; box-shadow: none; }
         .btn-limpar { background-color: transparent !important; color: #c0392b !important; border: 1px solid #c0392b !important; padding: 5px 12px !important; margin-top: 12px !important; width: auto !important; height: fit-content; font-size: 12px; border-radius: 4px; font-weight: 600; text-transform: uppercase; }
         .tags-container { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; }
@@ -58,8 +94,9 @@
     <h2>Acompanhamento de Execução de Projetos / TED</h2>
 
     <div class="info-box">
-        <p><strong>Orientações:</strong> Este formulário tem como objetivo registrar e monitorar o avanço físico, as metas e os resultados dos Termos de Execução Descentralizada (TEDs) e ações de ATER. A coleta precisa e contínua destes dados é fundamental para avaliar o impacto das ações, garantir a transparência na aplicação dos recursos e subsidiar o aprimoramento do apoio à agricultura familiar. Preencha os dados com atenção. Nos campos de Estados e Municípios, selecione as opções desejadas e clique em "Incluir" para confirmar. Para liberar os campos de quantidade nos resultados e públicos, basta marcar a caixa de seleção correspondente</p>
-        <p class="alert-text">É indispensável possuir conexão ativa com a internet no momento de clicar em "Salvar Dados" para que as informações sejam registradas com sucesso.</p>
+        <p><strong>Orientações:</strong> Este formulário tem como objetivo registrar e monitorar o avanço físico, as metas e os resultados dos Termos de Execução Descentralizada (TEDs) e ações de ATER. A coleta precisa e contínua destes dados é fundamental para avaliar o impacto das ações, garantir a transparência na aplicação dos recursos e subsidiar o aprimoramento do apoio à agricultura familiar.</p>
+        <p>Preencha os dados com atenção. Nos campos de Estados e Municípios, selecione as opções desejadas e clique em "Incluir" para confirmar. Para liberar os campos de quantidade nos resultados e públicos, basta marcar a caixa de seleção correspondente.</p>
+        <p class="alert-text">É indispensável possuir conexão ativa com a internet no momento de clicar em "Enviar dados de monitoramento definitivo" para que as informações sejam registradas com sucesso no sistema central. Caso precise interromper o preenchimento, utilize o botão "Salvar Rascunho" flutuante.</p>
         <p>💻 <strong>Recomendamos o uso de computador:</strong> O acesso pelo celular pode desconfigurar a formatação da página e dificultar o preenchimento. </p>
     </div>
 
@@ -272,11 +309,17 @@
         </div>
 
        <div style="text-align: center; color: #e67e22; font-size: 14px; font-weight: 600; margin-top: 25px; margin-bottom: -10px;">
-            ⏳ Após clicar em salvar, por favor, aguarde a mensagem de confirmação.
+            ⏳ Após clicar em "Enviar dados de monitoramento definitivo", por favor, aguarde a mensagem de confirmação.
         </div>
-        <button type="button" onclick="salvarFormulario()">Salvar Dados do Monitoramento</button>
+        
+        <button type="button" id="btnSalvar" onclick="salvarFormulario()">Enviar dados de monitoramento definitivo</button>
     </form>
 </div>
+
+<!-- Botão Flutuante de Rascunho -->
+<button type="button" id="btnRascunho" class="btn-flutuante" onclick="salvarRascunho()">
+    💾 Salvar Rascunho
+</button>
 
 <script>
     let listaMunicipiosAdicionados = [];
@@ -299,10 +342,127 @@
 
         gerarCamposDinamicos();
         configurarMetasDinamicas();
-        configurarLimiteTematicas(); // Inicia a regra de limite das temáticas
+        configurarLimiteTematicas(); 
+        
+        // Carrega automaticamente o rascunho salvo ao abrir a página
+        carregarRascunho();
     });
 
-    // Função para limitar a seleção de Temáticas a 3
+    // --- FUNÇÃO: SALVAR RASCUNHO ---
+    function salvarRascunho() {
+        const form = document.getElementById('projetoForm');
+        const rascunho = {
+            inputs: {},
+            checksAndRadios: [],
+            municipios: listaMunicipiosAdicionados
+        };
+
+        // Salvar campos de texto, números e seleções
+        const elements = form.querySelectorAll('input[type="text"], input[type="number"], input[type="email"], input[type="hidden"], select');
+        elements.forEach(el => {
+            if (el.name && el.id !== 'municipios') { 
+                if (el.multiple) {
+                    rascunho.inputs[el.name] = Array.from(el.selectedOptions).map(o => o.value);
+                } else {
+                    rascunho.inputs[el.name] = el.value;
+                }
+            }
+        });
+
+        // Salvar Checkboxes e Radios
+        form.querySelectorAll('input[type="checkbox"], input[type="radio"]').forEach(el => {
+            if (el.name) {
+                rascunho.checksAndRadios.push({
+                    name: el.name,
+                    value: el.value,
+                    checked: el.checked
+                });
+            }
+        });
+
+        localStorage.setItem('rascunhoTED', JSON.stringify(rascunho));
+        
+        // Alerta informativo claro e objetivo
+        alert("Rascunho salvo com sucesso!\n\n⚠️ IMPORTANTE: Para continuar o preenchimento depois, você precisará abrir o link do formulário neste MESMO COMPUTADOR e no MESMO NAVEGADOR.");
+
+        // Feedback visual no botão flutuante
+        const btn = document.getElementById('btnRascunho');
+        const originalText = "💾 Salvar Rascunho";
+        btn.innerHTML = "✓ Rascunho Salvo!";
+        btn.style.backgroundColor = "#27ae60";
+        btn.style.borderColor = "#27ae60";
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.backgroundColor = "";
+            btn.style.borderColor = "";
+        }, 3000);
+    }
+
+    // --- FUNÇÃO: CARREGAR RASCUNHO ---
+    function carregarRascunho() {
+        const salvo = localStorage.getItem('rascunhoTED');
+        if (!salvo) return;
+
+        try {
+            const rascunho = JSON.parse(salvo);
+
+            // 1. Restaurar o campo Total de Metas primeiro para gerar as caixas HTML dinâmicas
+            if (rascunho.inputs['totalMetas']) {
+                const tm = document.getElementById('totalMetas');
+                if (tm) {
+                    tm.value = rascunho.inputs['totalMetas'];
+                    tm.dispatchEvent(new Event('input')); // Força a criação das metas
+                }
+            }
+
+            // 2. Restaurar Checkboxes e Radios (para exibir campos ocultos como "Outro" e "Qtd")
+            if (rascunho.checksAndRadios) {
+                rascunho.checksAndRadios.forEach(item => {
+                    const el = document.querySelector(`input[name="${item.name}"][value="${item.value}"]`);
+                    if (el) {
+                        el.checked = item.checked;
+                        if (item.checked) {
+                            el.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+            }
+
+            // 3. Restaurar Textos, Números e Seleções
+            for (const [name, value] of Object.entries(rascunho.inputs)) {
+                if (name === 'totalMetas') continue; 
+                
+                const elements = document.querySelectorAll(`[name="${name}"]`);
+                elements.forEach(el => {
+                    if (el.type === 'radio' || el.type === 'checkbox') return; 
+                    
+                    if (el.multiple) {
+                        Array.from(el.options).forEach(o => {
+                            o.selected = value.includes(o.value);
+                        });
+                        el.dispatchEvent(new Event('change'));
+                    } else {
+                        el.value = value;
+                        el.dispatchEvent(new Event('input')); 
+                    }
+                });
+            }
+
+            // 4. Restaurar a lista de Municípios Incluídos
+            if (rascunho.municipios && rascunho.municipios.length > 0) {
+                listaMunicipiosAdicionados = rascunho.municipios;
+                atualizarInterfaceMunicipios();
+            }
+
+            // Recalcular a média ponderada financeira
+            calcularExecucaoTotal();
+
+        } catch (e) {
+            console.error("Erro ao restaurar rascunho:", e);
+        }
+    }
+
     function configurarLimiteTematicas() {
         const checkboxes = document.querySelectorAll('input[name="tematica"]');
         const limiteMaximo = 3;
@@ -312,7 +472,7 @@
                 const marcados = document.querySelectorAll('input[name="tematica"]:checked').length;
                 
                 if (marcados > limiteMaximo) {
-                    this.checked = false; // Desmarca a opção que ultrapassou o limite
+                    this.checked = false; 
                     alert("Por favor, selecione no máximo 3 Temáticas Principais.");
                     
                     if (this.value === "Outro") {
@@ -513,7 +673,7 @@
     }
 
     async function salvarFormulario() {
-        const btnSalvar = document.querySelector('button[onclick="salvarFormulario()"]');
+        const btnSalvar = document.getElementById('btnSalvar');
         const form = document.getElementById('projetoForm');
         if(!form.checkValidity()) { form.reportValidity(); return; }
 
@@ -581,10 +741,17 @@
         const URL_SCRIPT = "https://script.google.com/macros/s/AKfycbxjX1pfkUyaTsz13Ar48173H3coaP9hbaqN6E7o5-EQGzhTs8KnhTAmkv0Jnzcr1HEeLw/exec";
         try {
             await fetch(URL_SCRIPT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dados) });
-            alert("Dados salvos com sucesso na planilha!"); form.reset(); listaMunicipiosAdicionados = []; atualizarInterfaceMunicipios();
+            alert("Dados salvos com sucesso na planilha!"); 
+            
+            // LIMPA O RASCUNHO APÓS O ENVIO BEM-SUCEDIDO
+            localStorage.removeItem('rascunhoTED');
+            
+            form.reset(); 
+            listaMunicipiosAdicionados = []; 
+            atualizarInterfaceMunicipios();
             document.querySelectorAll('.dynamic-input').forEach(e => e.style.display = 'none');
             document.getElementById('metasContainer').style.display = 'none';
-        } catch (e) { alert("Erro ao enviar."); } finally { btnSalvar.innerText = "Salvar Dados"; btnSalvar.disabled = false; }
+        } catch (e) { alert("Erro ao enviar."); } finally { btnSalvar.innerText = "Enviar dados de monitoramento definitivo"; btnSalvar.disabled = false; }
     }
 </script>
 </body>
