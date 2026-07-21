@@ -139,6 +139,7 @@
 
          <div class="form-group">
             <label>Temáticas Principais</label>
+            <span class="help-text">Selecione até no máximo 3 temáticas.</span>
             <div class="checkbox-group">
                 <label class="checkbox-item"><input type="checkbox" name="tematica" value="Agroecologia"> Agroecologia</label>
                 <label class="checkbox-item"><input type="checkbox" name="tematica" value="ATER"> Assistência Técnica e Extensão Rural (ATER)</label>
@@ -182,7 +183,7 @@
         </div>
 
         <div class="form-group">
-            <label>O projeto está em execução e apresenta resultados parciais ou finais?</label>
+            <label>O projeto está em execução e apresenta resultados parciais?</label>
             <div class="radio-group" style="display: flex; gap: 20px; align-items: center;">
                 <label class="checkbox-item" style="margin-bottom: 0;"><input type="radio" name="temResultadosParciais" value="Sim" onchange="toggleResultadosParciais()"> Sim</label>
                 <label class="checkbox-item" style="margin-bottom: 0;"><input type="radio" name="temResultadosParciais" value="Nao" onchange="toggleResultadosParciais()"> Não</label>
@@ -298,7 +299,29 @@
 
         gerarCamposDinamicos();
         configurarMetasDinamicas();
+        configurarLimiteTematicas(); // Inicia a regra de limite das temáticas
     });
+
+    // Função para limitar a seleção de Temáticas a 3
+    function configurarLimiteTematicas() {
+        const checkboxes = document.querySelectorAll('input[name="tematica"]');
+        const limiteMaximo = 3;
+
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const marcados = document.querySelectorAll('input[name="tematica"]:checked').length;
+                
+                if (marcados > limiteMaximo) {
+                    this.checked = false; // Desmarca a opção que ultrapassou o limite
+                    alert("Por favor, selecione no máximo 3 Temáticas Principais.");
+                    
+                    if (this.value === "Outro") {
+                        toggleOutro(this, 'tematicaOutro');
+                    }
+                }
+            });
+        });
+    }
 
     function formatarMoeda(campo) {
         let valor = campo.value.replace(/\D/g, ''); 
@@ -450,7 +473,6 @@
     }
 
     function gerarCamposDinamicos() {
-        // LISTAS ORIGINAIS RESTAURADAS
         const beneficiarios = [
             "Agricultores familiares", "Assentados da reforma agrária", "Comunidades quilombolas", 
             "Cooperativas / associações", "Mulheres rurais", "Juventude rural", "Povos indígenas", 
@@ -472,7 +494,6 @@
                 const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.id = `${prefixo}_${index}`; checkbox.value = item; checkbox.name = containerId; 
                 const label = document.createElement('label'); label.htmlFor = `${prefixo}_${index}`; label.innerText = item;
                 
-                // Lógica de "Outro" e "Outros"
                 const eOutro = item === "Outro" || item === "Outros";
                 const nomeOutroInput = eOutro ? `<input type="text" id="nome_${prefixo}_${index}" class="dynamic-input" style="width:100px !important; margin:0 10px;" placeholder="Qual?">` : '';
                 const numberInput = `<input type="number" class="dynamic-input" placeholder="Qtd" id="qtd_${prefixo}_${index}" min="0">`;
